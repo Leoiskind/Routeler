@@ -1,0 +1,285 @@
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #1a1a2e;
+  color: white;
+}
+
+/* MAP (left side) */
+#map {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 70%;
+  height: 100%;
+}
+
+/* RIGHT PANEL (your .info-box) */
+.info-box {
+  position: absolute;
+  right: 0;
+  top: 60px;
+  width: 30%;
+  height: calc(100% - 60px);
+  padding: 25px;
+  background: #16213e;
+  overflow-y: auto;
+  border-left: 1px solid #2a2a4a;
+  box-sizing: border-box;
+}
+
+/* TEXT AT TOP */
+.info-box p {
+  font-size: 14px;
+  margin-bottom: 15px;
+}
+
+/* DIRECTIONS (make it look structured) */
+#directions {
+  font-size: 13px;
+}
+
+/* LIST */
+#directions ol {
+  padding-left: 20px;
+}
+
+#directions li {
+  margin-bottom: 10px;
+  line-height: 1.5;
+  padding: 10px;
+  background: #1a1a2e;
+  border-radius: 4px;
+  border: 1px solid #2a2a4a;
+}
+
+/* SCROLLBAR (optional nice touch) */
+.info-box::-webkit-scrollbar {
+  width: 8px;
+}
+
+.info-box::-webkit-scrollbar-thumb {
+  background: #ccc;
+  border-radius: 4px;
+}
+
+/* NAVBAR */
+.navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  background: #16213e;
+  padding: 16px 60px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid #2a2a4a;
+  box-sizing: border-box;
+  z-index: 1000;
+  padding: 16px 20px;
+}
+
+.nav-brand {
+  font-size: 22px;
+  font-weight: bold;
+  color: white;
+  text-decoration: none;
+}
+
+.nav-links {
+  display: flex;
+  gap: 12px;
+}
+
+.nav-links a.nav-item {
+  padding: 6px 12px;
+  border-radius: 5px;
+  background: transparent;
+  color: #aaaaaa;
+  text-decoration: none;
+  font-size: 15px;
+  transition: all 0.2s;
+}
+
+.nav-links a.nav-item:hover {
+  color: #e94560;
+}
+
+.nav-links a.nav-item.active {
+  color: #000;        
+  background: #ffe96b;  
+}
+
+.user {
+  font-size: 14px;
+  color: #aaaaaa;
+}
+
+
+.logo {
+  font-weight: bold;
+  font-size: 18px;
+}
+
+.tabs button {
+  margin: 0 5px;
+  padding: 6px 12px;
+  border: none;
+  background: transparent;
+  color: #aaaaaa;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.tabs .active {
+  color: #e94560;
+  background: transparent;
+}
+
+.user {
+  font-size: 14px;
+}
+
+#map {
+  top: 60px;   /* ADD THIS */
+  height: calc(100% - 60px);  /* CHANGE THIS */
+}
+
+/* SUMMARY BOX */
+#summary {
+  background: #1a1a2e;
+  padding: 15px;
+  border-radius: 6px;
+  margin-bottom: 15px;
+  border: 1px solid #2a2a4a;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+/* TITLE */
+.info-box h2 {
+  margin-top: 0;
+  margin-bottom: 5px;
+}
+
+/* SUBTITLE */
+.subtitle {
+  font-size: 13px;
+  color: #666;
+  margin-bottom: 15px;
+}
+
+/* SECTION TITLE */
+.info-box h3 {
+  margin-top: 20px;
+  margin-bottom: 10px;
+  font-size: 16px;
+}
+
+/* SAVE BUTTON */
+.save-btn {
+  width: 100%;
+  margin-top: 0px;
+  padding: 12px;
+  background: #e94560;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.save-btn:hover {
+  background: #c73652;
+}
+
+.info-box section {
+  margin-bottom: 20px;
+}
+
+.info-box h2 {
+  font-size: 22px;
+  margin-bottom: 8px;
+}
+
+.subtitle {
+  color: #aaaaaa;
+}
+
+.info-box h3 {
+  color: white;
+}
+
+.tabs button {
+  background: transparent;
+}
+
+.tabs .active {
+  background: #ffe96b;
+}
+
+#directions {
+  max-height: 300px;   /* control height */
+  overflow-y: auto;    /* enable vertical scroll */
+  padding-right: 5px;  /* prevents text touching scrollbar */
+}
+
+.directions-container {
+  border: 1px solid #2a2a4a;
+  border-radius: 6px;
+  padding: 10px;
+  background: #1a1a2e;
+}
+
+.route-form {
+  display: flex;
+  flex-direction: column;
+}
+
+.route-form label {
+  font-size: 16px;
+  font-weight: 600;
+  color: #f1f1f1;
+  display: block;
+  padding-bottom: 7px;
+}
+
+.route-form input,
+.route-form textarea {
+  width: 92%;
+  padding: 12px;
+  background: #1a1a2e;
+  border: 1px solid #444;
+  color: white;
+  border-radius: 4px;
+  font-size: 15px;
+  font-family: Arial, sans-serif;
+  transition: border-color 0.2s;
+  margin-bottom: 15px;
+  resize: vertical;
+}
+
+.route-form input:focus,
+.route-form textarea:focus {
+  border-color: #e94560;
+  outline: none;
+}
+
+#route-desc {
+  resize: vertical;
+  max-height: 200px; /* adjust as needed */
+}
+
+.route-form button {
+  width: 100%;
+  padding: 12px;
+  background: #e94560;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
