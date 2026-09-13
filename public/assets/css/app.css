@@ -1,100 +1,124 @@
-/* Routeler — base styles.
-   Deliberately minimal: enough that pages are legible while you build.
-   Replace freely. */
+/* Routeler
+   Palette and feel carried over from the original stylesheets:
+   deep navy ground, lighter navy surfaces, crimson accent,
+   yellow for the active nav item. */
 
 :root {
-    --ink:        #16202a;
-    --ink-soft:   #55677a;
-    --paper:      #f7f8fa;
-    --surface:    #ffffff;
-    --rule:       #dde3e9;
-    --accent:     #10695c;
-    --accent-dim: #e3efec;
-    --radius:     6px;
+    --bg:           #1a1a2e;
+    --surface:      #16213e;
+    --rule:         #2a2a4a;
+    --accent:       #e94560;
+    --accent-dark:  #c73652;
+    --highlight:    #ffe96b;
+    --ink:          #ffffff;
+    --ink-soft:     #aaaaaa;
+    --radius:       8px;
+    --radius-sm:    4px;
+    --navbar-h:     58px;
+    color-scheme: dark;
 }
 
 * { box-sizing: border-box; }
 
 body {
     margin: 0;
-    background: var(--paper);
+    background: var(--bg);
     color: var(--ink);
-    font: 16px/1.6 system-ui, -apple-system, "Segoe UI", sans-serif;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+    min-height: 100vh;
 }
 
 a { color: var(--accent); }
+a:hover { color: var(--accent-dark); }
+a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
-.container {
-    max-width: 900px;
-    margin: 0 auto;
-    padding: 32px 20px 64px;
+h1 { font-size: 32px; margin: 0 0 8px; }
+h2 { font-size: 20px; }
+
+code {
+    background: var(--bg);
+    border: 1px solid var(--rule);
+    border-radius: var(--radius-sm);
+    padding: 1px 5px;
+    font-size: .9em;
 }
 
-/* nav */
+/* The navbar is fixed, so the container clears it. */
+.container {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: calc(var(--navbar-h) + 42px) 24px 64px;
+}
+
+/* ── nav ─────────────────────────────────────────────── */
 .navbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 1000;
     display: flex;
     align-items: center;
     gap: 24px;
-    padding: 12px 20px;
+    padding: 16px 20px;
     background: var(--surface);
     border-bottom: 1px solid var(--rule);
 }
 .nav-brand {
-    font-weight: 700;
-    font-size: 18px;
-    text-decoration: none;
+    font-size: 22px;
+    font-weight: bold;
     color: var(--ink);
+    text-decoration: none;
 }
-.nav-links {
-    display: flex;
-    gap: 18px;
-    flex: 1;
-    flex-wrap: wrap;
-}
+.nav-brand:hover { color: var(--ink); }
+.nav-links { display: flex; gap: 12px; flex: 1; flex-wrap: wrap; }
 .nav-links a,
 .nav-account a {
-    text-decoration: none;
+    padding: 6px 12px;
+    border-radius: 5px;
     color: var(--ink-soft);
+    text-decoration: none;
     font-size: 15px;
+    transition: color .2s, background .2s;
 }
 .nav-links a:hover,
 .nav-account a:hover { color: var(--accent); }
+
+/* The original marked the current page with a yellow pill. */
 .nav-links a[aria-current="page"] {
-    color: var(--accent);
-    font-weight: 600;
+    color: #000;
+    background: var(--highlight);
 }
+.nav-links a[aria-current="page"]:hover { color: #000; }
+
+.nav-signout { color: var(--ink-soft); }
+.nav-signout:hover { color: var(--accent); }
+
 .nav-signin {
-    padding: 6px 14px;
     background: var(--accent);
     color: #fff !important;
-    border-radius: var(--radius);
 }
+.nav-signin:hover { background: var(--accent-dark); }
 
-/* route cards */
+/* ── cards ───────────────────────────────────────────── */
 .route-card {
     background: var(--surface);
     border: 1px solid var(--rule);
     border-radius: var(--radius);
-    padding: 18px 20px;
+    padding: 20px 24px;
     margin-bottom: 14px;
+    transition: border-color .2s;
 }
-.route-card__title {
-    margin: 0 0 4px;
-    font-size: 18px;
-}
-.route-card__title a { text-decoration: none; }
-.route-card__title a:hover { text-decoration: underline; }
-.route-card__meta {
-    margin: 0;
-    font-size: 14px;
-    color: var(--ink-soft);
-}
-.route-card__description {
-    margin: 10px 0 0;
-    font-size: 15px;
-}
+.route-card:hover { border-color: var(--accent); }
+.route-card__title { margin: 0 0 4px; font-size: 17px; }
+.route-card__title a { color: var(--ink); text-decoration: none; }
+.route-card__title a:hover { color: var(--accent); }
+.route-card__meta { margin: 0; font-size: 13px; color: var(--ink-soft); }
+.route-card__description { margin: 10px 0 0; font-size: 15px; }
 
-/* maps */
+/* ── maps ────────────────────────────────────────────── */
 .map {
     width: 100%;
     height: 420px;
@@ -102,81 +126,162 @@ a { color: var(--accent); }
     border-radius: var(--radius);
     margin-bottom: 20px;
 }
+.map--tall { height: 520px; }
 
-/* forms */
-.field { display: block; margin-bottom: 14px; }
+/* ── forms ───────────────────────────────────────────── */
+.field { display: block; margin-bottom: 20px; }
+.field span,
 .field label {
     display: block;
     font-size: 14px;
-    font-weight: 600;
-    margin-bottom: 4px;
+    color: var(--ink-soft);
+    margin-bottom: 6px;
 }
 .field input,
 .field textarea {
+    display: block;
     width: 100%;
-    padding: 8px 10px;
-    font: inherit;
-    border: 1px solid var(--rule);
-    border-radius: var(--radius);
-    background: var(--surface);
+    padding: 12px;
+    background: var(--bg);
+    border: 1px solid #444;
+    border-radius: var(--radius-sm);
+    color: var(--ink);
+    font: 15px Arial, Helvetica, sans-serif;
+    transition: border-color .2s;
 }
+.field input:focus,
+.field textarea:focus { outline: none; border-color: var(--accent); }
+.field textarea { resize: vertical; min-height: 90px; }
+
 .button {
-    padding: 9px 18px;
-    font: inherit;
-    font-weight: 600;
-    color: #fff;
+    display: block;
+    width: 100%;
+    padding: 12px;
+    margin-top: 8px;
     background: var(--accent);
-    border: 0;
-    border-radius: var(--radius);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius-sm);
+    font-size: 16px;
     cursor: pointer;
+    transition: background .2s;
+}
+.button:hover:not(:disabled) { background: var(--accent-dark); }
+.button:disabled { opacity: .45; cursor: not-allowed; }
+
+.route-form { max-width: 520px; }
+
+/* ── create page ─────────────────────────────────────── */
+.hint { color: var(--ink-soft); font-size: 15px; margin-top: 0; }
+.summary {
+    padding: 12px 16px;
+    margin-bottom: 16px;
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-left: 3px solid var(--accent);
+    border-radius: var(--radius-sm);
+    font-size: 15px;
+}
+.form-error {
+    margin-top: 12px;
+    padding: 12px 16px;
+    background: rgba(233, 69, 96, .12);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    font-size: 15px;
 }
 
-/* misc */
+/* ── route detail ────────────────────────────────────── */
+.breadcrumb { margin: 0 0 10px; font-size: 14px; }
+.breadcrumb a { color: var(--ink-soft); text-decoration: none; }
+.breadcrumb a:hover { color: var(--accent); }
+.route-meta { margin: 0 0 14px; color: var(--ink-soft); font-size: 14px; }
+.route-description { margin: 0 0 22px; max-width: 60ch; }
+
+/* ── profile ─────────────────────────────────────────── */
+.profile-header {
+    display: flex;
+    align-items: center;
+    gap: 40px;
+    margin-bottom: 32px;
+}
+.avatar {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex: 0 0 auto;
+}
+.avatar--initials {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--accent);
+    color: #fff;
+    font-size: 32px;
+    font-weight: bold;
+}
+.profile-identity h1 { margin: 0 0 4px; }
+.profile-handle { margin: 0; color: var(--ink-soft); font-size: 15px; }
+.profile-facts { margin: 8px 0 0; color: var(--ink-soft); font-size: 14px; }
+.profile-bio { margin: 0 0 24px; max-width: 60ch; }
+
+.stats { display: flex; gap: 32px; margin: 0 0 32px; }
+.stats .stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 0;
+}
+.stats dd {
+    order: -1;                      /* value above label, as in the original */
+    margin: 0;
+    font-size: 24px;
+    font-weight: bold;
+    color: var(--accent);
+    font-variant-numeric: tabular-nums;
+}
+.stats dt { font-size: 13px; color: var(--ink-soft); }
+
+.section-heading { font-size: 20px; margin: 0 0 16px; }
+
+/* ── misc ────────────────────────────────────────────── */
 .empty {
-    padding: 32px;
+    padding: 40px 32px;
     text-align: center;
     color: var(--ink-soft);
     background: var(--surface);
-    border: 1px dashed var(--rule);
+    border: 1px solid var(--rule);
     border-radius: var(--radius);
 }
+.empty p { margin: 0 0 8px; }
+.empty p:last-child { margin-bottom: 0; }
+
 .site-footer {
-    padding: 20px;
+    padding: 24px 20px;
     text-align: center;
     font-size: 13px;
     color: var(--ink-soft);
     border-top: 1px solid var(--rule);
 }
 
-@media (max-width: 560px) {
+@media (max-width: 640px) {
     .navbar { flex-wrap: wrap; gap: 12px; }
-    .container { padding: 20px 16px 48px; }
+    .container { padding: calc(var(--navbar-h) + 56px) 16px 48px; }
+    .profile-header { gap: 20px; }
+    .avatar { width: 72px; height: 72px; }
+    .avatar--initials { font-size: 24px; }
+    h1 { font-size: 26px; }
 }
 
-/* create page */
-.hint { color: var(--ink-soft); font-size: 15px; margin-top: 0; }
-.summary {
-    padding: 10px 14px;
-    margin-bottom: 16px;
-    background: var(--accent-dim);
-    border-radius: var(--radius);
+/* form feedback */
+.form-success {
+    margin: 0 0 18px;
+    padding: 12px 16px;
+    background: rgba(255, 233, 107, .12);
+    border-left: 3px solid var(--highlight);
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
     font-size: 15px;
 }
-.route-form { max-width: 520px; }
-.form-error {
-    margin-top: 12px;
-    padding: 10px 14px;
-    background: #fbeae7;
-    border-left: 3px solid #9d2f26;
-    color: #7a241d;
-    font-size: 15px;
-    border-radius: 0 var(--radius) var(--radius) 0;
-}
-
-/* route detail */
-.breadcrumb { margin: 0 0 8px; font-size: 14px; }
-.breadcrumb a { text-decoration: none; color: var(--ink-soft); }
-.breadcrumb a:hover { color: var(--accent); }
-.route-meta { margin: 0 0 12px; color: var(--ink-soft); font-size: 15px; }
-.route-description { margin: 0 0 20px; max-width: 60ch; }
-.map--tall { height: 520px; }
+.form-error p { margin: 0 0 6px; }
+.form-error p:last-child { margin-bottom: 0; }

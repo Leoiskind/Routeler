@@ -22,6 +22,7 @@ $active = static fn (string $file): string => $current === $file ? ' aria-curren
         <?php if ($userId !== null): ?>
             <a href="/create.php"<?= $active('create.php') ?>>Create route</a>
             <a href="/profile.php"<?= $active('profile.php') ?>>Profile</a>
+            <a href="/settings.php"<?= $active('settings.php') ?>>Settings</a>
         <?php endif; ?>
     </div>
 
