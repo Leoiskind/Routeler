@@ -242,7 +242,9 @@ Both schema files are written and attached. **The Postgres one I've actually run
 - [ ] Commit `docs/schema.mysql.sql` to the repo root as `schema.sql`
 - [ ] Write the new repositories against it (Phase 4) rather than porting the old queries — the old API files are being deleted
 
-> **Verification status (13 Sep).** The container's egress policy blocks `archive.ubuntu.com` and `pypi.org`, so no MySQL server or SQL parser could be installed to execute the file directly. What *was* checked: every identifier against the MySQL 8.0 keyword list (all clear — `position` is not reserved, `follows` and `description` are non-reserved); CHECK-expression legality against the MySQL manual (deterministic built-ins like `TRIM`/`CHAR_LENGTH` allowed, multi-column table CHECKs allowed); a structural lint for paren balance, duplicate constraint names, FK ordering and column references; and the full design behaviourally, by running the equivalent Postgres schema and confirming all seven named constraints reject bad data and `ON DELETE CASCADE` cleans up correctly.
+> **RESOLVED (13 Sep).** The schema was executed for real: `docker compose up` ran it against **MySQL 8.4.11** with no errors, so the whole DDL is valid — including `REGEXP` inside a CHECK constraint, the one line flagged below as uncertain. Note `mysql:8` now resolves to the 8.4 LTS line, not 8.0; consider pinning `mysql:8.4` so local and Aiven can't drift.
+>
+> **Earlier verification status, kept for the record.** The container's egress policy blocks `archive.ubuntu.com` and `pypi.org`, so no MySQL server or SQL parser could be installed to execute the file directly. What *was* checked: every identifier against the MySQL 8.0 keyword list (all clear — `position` is not reserved, `follows` and `description` are non-reserved); CHECK-expression legality against the MySQL manual (deterministic built-ins like `TRIM`/`CHAR_LENGTH` allowed, multi-column table CHECKs allowed); a structural lint for paren balance, duplicate constraint names, FK ordering and column references; and the full design behaviourally, by running the equivalent Postgres schema and confirming all seven named constraints reject bad data and `ON DELETE CASCADE` cleans up correctly.
 >
 > What remains unverified is MySQL dialect syntax specifically — and one line in particular: `REGEXP` inside a CHECK constraint. The manual permits deterministic operators but doesn't name `REGEXP` explicitly. If `docker compose up` rejects it, drop that constraint and validate usernames in the application instead.
 
@@ -250,7 +252,9 @@ Both schema files are written and attached. **The Postgres one I've actually run
 
 ---
 
-## Phase 3 — Containerise
+## Phase 3 — Containerise  ✅ DONE (13 Sep)
+
+Working: `Dockerfile`, `.dockerignore`, `compose.yaml`, `.env`/`.env.example`, `.gitattributes` + `.vscode/settings.json` for LF. `docker compose up --build` brings up Apache/PHP 8.3.33 and MySQL 8.4.11, healthcheck gates the web container, and the schema seeds on first run.
 
 Two files. After this, the project runs identically on your laptop, on any host, and in CI — which is what "deployable anywhere" actually means.
 
