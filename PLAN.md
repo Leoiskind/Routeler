@@ -12,6 +12,7 @@
 |---|---|---|
 | Database engine | **MySQL** | Use `docs/schema.mysql.sql`; Dockerfile keeps `pdo_mysql`; no query porting |
 | Database host | **Aiven** free MySQL | 1 GB, no card, permanent — but powers off when idle (see Phase 6b) |
+| App host | **Render** free tier | Docker runtime, auto-deploys from GitHub; sleeps after ~15 min idle |
 | Authentication | **Both** GitHub and Google, behind one `AuthProvider` interface | CAS code is deleted, not ported; login rewritten from scratch |
 | Repo ownership | Solo continuation | History rewrite and force-push are allowed; teammates' placeholder pages can go |
 | Existing schema | Redo the design | Phase 2 designs a fresh schema; no `mysqldump` needed |
@@ -241,7 +242,11 @@ Both schema files are written and attached. **The Postgres one I've actually run
 - [ ] Commit `docs/schema.mysql.sql` to the repo root as `schema.sql`
 - [ ] Write the new repositories against it (Phase 4) rather than porting the old queries — the old API files are being deleted
 
-> **Note:** the MySQL schema is written but was never executed — I had no MySQL server available when drafting it. The Postgres one I did run. So the first `docker compose up` in Phase 3 doubles as the test: if `schema.sql` has a syntax error, the `db` container will fail to initialise and say so in its logs.
+> **Verification status (13 Sep).** The container's egress policy blocks `archive.ubuntu.com` and `pypi.org`, so no MySQL server or SQL parser could be installed to execute the file directly. What *was* checked: every identifier against the MySQL 8.0 keyword list (all clear — `position` is not reserved, `follows` and `description` are non-reserved); CHECK-expression legality against the MySQL manual (deterministic built-ins like `TRIM`/`CHAR_LENGTH` allowed, multi-column table CHECKs allowed); a structural lint for paren balance, duplicate constraint names, FK ordering and column references; and the full design behaviourally, by running the equivalent Postgres schema and confirming all seven named constraints reject bad data and `ON DELETE CASCADE` cleans up correctly.
+>
+> What remains unverified is MySQL dialect syntax specifically — and one line in particular: `REGEXP` inside a CHECK constraint. The manual permits deterministic operators but doesn't name `REGEXP` explicitly. If `docker compose up` rejects it, drop that constraint and validate usernames in the application instead.
+
+**Attachments delivered in chat, not committed:** `schema.postgres.sql` is kept as a reference copy only — delete `docs/schema.postgres.sql` from the repo.
 
 ---
 
@@ -472,15 +477,31 @@ Genuinely free options for a Docker container, as of September 2026:
 | ~~Fly.io~~ | — | — | Yes | Free tier gone for accounts created after Oct 2024 |
 | ~~Railway~~ | $5 trial credit only | — | No | No free tier since 2024 |
 
-**Recommendation: Render.** No card, deploys straight from your GitHub repo, and the cold start is acceptable for a portfolio link. Put "may take ~30s to wake" in your README and nobody minds.
+**Decision taken: Render.** No card, deploys straight from your GitHub repo, and the cold start is acceptable for a portfolio link. Put "may take ~30s to wake" in your README and nobody minds.
 
 Steps:
 
-1. render.com → New → Web Service → connect the GitHub repo
+1. render.com → New → Web Service → connect via the **Git Provider** method and authorise GitHub. This matters: auto-deploy only works through Git Provider, not through a public repo URL or a prebuilt image. It handles private repos fine once authorised, which yours will be.
 2. Runtime: **Docker** (it finds your `Dockerfile`)
 3. Add every variable from `.env.example` under Environment, with real values
 4. Deploy. You get `routeler.onrender.com` with HTTPS
 5. Update `OAUTH_REDIRECT_URI` and `APP_URL` to the real domain, and add that domain to your Mapbox token's URL restrictions
+
+#### The port gotcha — expect this one
+
+Render requires your service to bind to host `0.0.0.0` on the port given by the **`PORT` environment variable**, which defaults to `10000`. The base `php:8.3-apache` image listens on port 80, hardcoded in two places: `Listen 80` in `/etc/apache2/ports.conf`, and `<VirtualHost *:80>` in the site config.
+
+Render says it can *usually* auto-detect a service listening on a different port, and if it can't, the deploy fails outright with an error in the logs. "Usually" is a poor thing to build on, so make Apache honour `$PORT`.
+
+The subtlety: `PORT` is only known at **run** time, not build time, so a `RUN sed ...` in the Dockerfile can't do it. You need an entrypoint script that rewrites both files using `${PORT:-80}` and then `exec`s Apache — the `exec` matters, so Apache becomes PID 1 and receives shutdown signals properly. Keep the `EXPOSE` line as documentation; it has no effect on Render either way.
+
+Sanity check locally before deploying: `docker run -e PORT=10000 -p 8080:10000 routeler` should serve on `localhost:8080`.
+
+#### Two sleeping services
+
+You've chosen a free Render service *and* a free Aiven database, and both go to sleep. Render spins down after roughly 15 minutes idle; Aiven powers off after a longer stretch of inactivity, with an email warning first. A visitor arriving cold could therefore wait for the web service to wake *and* hit a database that isn't running.
+
+Nothing to fix, but two things worth doing: say so in the README, and don't let a failed database connection show a stack trace — catch it and render "waking up, try again in a moment." Aiven's power-off needs a manual restart from their dashboard, so the email warning is the one to watch for.
 
 ### 6b. The database
 
@@ -648,8 +669,8 @@ Yours is still the GitLab template, headed "Getting started — To make it easy 
 
 ## Attachments
 
-- `schema.postgres.sql` — validated on PostgreSQL 16 (DDL runs, constraints fire, stats query correct)
-- `schema.mysql.sql` — written but untested
+- `docs/schema.mysql.sql` — **the one to use.** Verified as described in Phase 2c.
+- `schema.postgres.sql` — reference only, delivered in chat. Not in the repo.
 
 ## What I need from you
 
