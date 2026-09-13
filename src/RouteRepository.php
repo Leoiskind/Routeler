@@ -136,4 +136,20 @@ class RouteRepository{
 
         return $grouped;
     }
+
+    public function listByAuthor(string $username): array
+    {
+       $sql = 'SELECT ' . self::SELECT_COLUMNS . '
+                FROM routes r
+                JOIN users u ON u.id = r.user_id
+                LEFT JOIN route_points p ON p.route_id = r.id
+                WHERE u.username = :username
+                ORDER BY r.created_at DESC, r.id, p.position';
+
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute(['username' => $username]);
+
+        return array_values($this->groupRows($stmt));
+    }
+
 }

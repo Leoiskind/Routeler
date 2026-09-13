@@ -101,3 +101,43 @@ function mapbox_token(): string
 {
     return (string) (getenv('MAPBOX_TOKEN') ?: '');
 }
+
+/**
+ * The session's CSRF token, created on first use.
+ *
+ * Cross-site request forgery: another site can make your browser POST to
+ * this app while you are signed in — your cookies go along automatically,
+ * so the request looks authentic. The defence is a secret the attacker
+ * cannot read: a random token kept in the session and echoed in every
+ * form. They can make your browser send a request; they cannot know what
+ * to put in this field.
+ */
+function csrf_token(): string
+{
+    if (empty($_SESSION['csrf_token'])) {
+        $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+    }
+    return (string) $_SESSION['csrf_token'];
+}
+
+/**
+ * The hidden input to drop inside every state-changing form.
+ */
+function csrf_field(): string
+{
+    return '<input type="hidden" name="_token" value="' . e(csrf_token()) . '">';
+}
+
+/**
+ * True when the submitted token matches the session's.
+ *
+ * hash_equals() rather than === : it compares in constant time, so the
+ * duration of the comparison cannot leak how much of the token was right.
+ */
+function csrf_valid(): bool
+{
+    $sent = $_POST['_token'] ?? '';
+    return is_string($sent)
+        && $sent !== ''
+        && hash_equals(csrf_token(), $sent);
+}
