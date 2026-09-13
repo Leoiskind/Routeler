@@ -76,10 +76,15 @@ The real problems are different ones:
 
 The fix is therefore *not* "hide it" — it's "get your own, and restrict it":
 
-- [ ] Create a free Mapbox account, generate a public token
-- [ ] In the Mapbox dashboard, add a **URL restriction** for your deployed domain plus `http://localhost:8080`
+- [ ] Create a free Mapbox account
+- [ ] **Create a new public token — do not use the "Default public token."** Mapbox does not allow URL restrictions on the default token, so restricting it is impossible. This catches people out.
+- [ ] On that new token, add **URL restrictions**: `localhost:8080` for development, and your deployed domain once Phase 6 gives you one
 - [ ] Replace all five occurrences
 - [ ] Delete the `<!-- mapbox access token '...' -->` HTML comments at the top of `create_route.php` and `view_route.php` — those serve no purpose but do make the token trivially greppable
+
+URL restriction details worth knowing: no wildcards and no IP addresses are accepted, so you list each host explicitly (up to 100 per token). Subdomains and subpaths of a listed URL are allowed automatically, and if you omit the port, 80 and 443 are permitted by default — which is why `localhost:8080` needs its port written out.
+
+It's also worth knowing *how* the restriction works, because it explains the gaps: Mapbox checks the browser's `Referer` header. That means the restriction quietly does nothing for requests with no referrer — a privacy extension like Brave Shields or Ghostery stripping it, a page with a `noreferrer` or `same-origin` referrer policy, or a mobile SDK. Mapbox itself describes URL restrictions as "a best-effort mitigation technique." Treat it as a speed bump, not a lock: also set a usage alert on the account so a spike tells you something is wrong.
 
 > **The general rule, worth internalising:** a secret is something the *server* knows and the *browser* must never see. A database password qualifies. A Mapbox public token doesn't — it's public by design, and the control you want is scoping, not concealment. Confusing the two leads people to build pointless server-side proxies for things that were never secret.
 
