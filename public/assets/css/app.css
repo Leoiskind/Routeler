@@ -1,0 +1,174 @@
+/* Routeler — base styles.
+   Deliberately minimal: enough that pages are legible while you build.
+   Replace freely. */
+
+:root {
+    --ink:        #16202a;
+    --ink-soft:   #55677a;
+    --paper:      #f7f8fa;
+    --surface:    #ffffff;
+    --rule:       #dde3e9;
+    --accent:     #10695c;
+    --accent-dim: #e3efec;
+    --radius:     6px;
+}
+
+* { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font: 16px/1.6 system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+a { color: var(--accent); }
+
+.container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 32px 20px 64px;
+}
+
+/* nav */
+.navbar {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    padding: 12px 20px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--rule);
+}
+.nav-brand {
+    font-weight: 700;
+    font-size: 18px;
+    text-decoration: none;
+    color: var(--ink);
+}
+.nav-links {
+    display: flex;
+    gap: 18px;
+    flex: 1;
+    flex-wrap: wrap;
+}
+.nav-links a,
+.nav-account a {
+    text-decoration: none;
+    color: var(--ink-soft);
+    font-size: 15px;
+}
+.nav-links a:hover,
+.nav-account a:hover { color: var(--accent); }
+.nav-links a[aria-current="page"] {
+    color: var(--accent);
+    font-weight: 600;
+}
+.nav-signin {
+    padding: 6px 14px;
+    background: var(--accent);
+    color: #fff !important;
+    border-radius: var(--radius);
+}
+
+/* route cards */
+.route-card {
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: var(--radius);
+    padding: 18px 20px;
+    margin-bottom: 14px;
+}
+.route-card__title {
+    margin: 0 0 4px;
+    font-size: 18px;
+}
+.route-card__title a { text-decoration: none; }
+.route-card__title a:hover { text-decoration: underline; }
+.route-card__meta {
+    margin: 0;
+    font-size: 14px;
+    color: var(--ink-soft);
+}
+.route-card__description {
+    margin: 10px 0 0;
+    font-size: 15px;
+}
+
+/* maps */
+.map {
+    width: 100%;
+    height: 420px;
+    border: 1px solid var(--rule);
+    border-radius: var(--radius);
+    margin-bottom: 20px;
+}
+
+/* forms */
+.field { display: block; margin-bottom: 14px; }
+.field label {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+.field input,
+.field textarea {
+    width: 100%;
+    padding: 8px 10px;
+    font: inherit;
+    border: 1px solid var(--rule);
+    border-radius: var(--radius);
+    background: var(--surface);
+}
+.button {
+    padding: 9px 18px;
+    font: inherit;
+    font-weight: 600;
+    color: #fff;
+    background: var(--accent);
+    border: 0;
+    border-radius: var(--radius);
+    cursor: pointer;
+}
+
+/* misc */
+.empty {
+    padding: 32px;
+    text-align: center;
+    color: var(--ink-soft);
+    background: var(--surface);
+    border: 1px dashed var(--rule);
+    border-radius: var(--radius);
+}
+.site-footer {
+    padding: 20px;
+    text-align: center;
+    font-size: 13px;
+    color: var(--ink-soft);
+    border-top: 1px solid var(--rule);
+}
+
+@media (max-width: 560px) {
+    .navbar { flex-wrap: wrap; gap: 12px; }
+    .container { padding: 20px 16px 48px; }
+}
+
+/* create page */
+.hint { color: var(--ink-soft); font-size: 15px; margin-top: 0; }
+.summary {
+    padding: 10px 14px;
+    margin-bottom: 16px;
+    background: var(--accent-dim);
+    border-radius: var(--radius);
+    font-size: 15px;
+}
+.route-form { max-width: 520px; }
+.form-error {
+    margin-top: 12px;
+    padding: 10px 14px;
+    background: #fbeae7;
+    border-left: 3px solid #9d2f26;
+    color: #7a241d;
+    font-size: 15px;
+    border-radius: 0 var(--radius) var(--radius) 0;
+}
