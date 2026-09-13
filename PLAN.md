@@ -10,20 +10,23 @@
 
 | Question | Your answer | Consequence for this plan |
 |---|---|---|
-| Database engine | Undecided — see both | Phase 2 presents the evidence; **you pick before Phase 3** |
-| Authentication | GitHub or Google OAuth | CAS code is deleted, not ported |
+| Database engine | **MySQL** | Use `docs/schema.mysql.sql`; Dockerfile keeps `pdo_mysql`; no query porting |
+| Database host | **Aiven** free MySQL | 1 GB, no card, permanent — but powers off when idle (see Phase 6b) |
+| Authentication | **Both** GitHub and Google, behind one `AuthProvider` interface | CAS code is deleted, not ported; login rewritten from scratch |
 | Repo ownership | Solo continuation | History rewrite and force-push are allowed; teammates' placeholder pages can go |
 | Existing schema | Redo the design | Phase 2 designs a fresh schema; no `mysqldump` needed |
+| The REST API files | **Delete and rewrite** | `route_api.php` and `user_api.php` are scrapped, not repaired — see Phase 4 |
 
 ## Still open
 
-1. **MySQL or Postgres** — decide at the end of Phase 2.
-2. **GitHub or Google** as the OAuth provider — decide at the start of Phase 5.
-3. **Project name.** The repo is `Routeler`, the code says `Routler`, the original GitLab project was `routler`. Pick one spelling and apply it everywhere. This plan writes it `Routeler`.
+1. **Whether the Phase 2a schema needs changes** before it's committed.
+2. **Project name.** The repo is `Routeler`, the code says `Routler`, the original GitLab project was `routler`. Pick one spelling and apply it everywhere. This plan writes it `Routeler`.
 
 ## A note on how we'll work
 
-Your machine's Claude workspace is currently unavailable — a Windows update from 8 September is blocking it, so I can't run commands on your computer this session. I can still read and write files in the repo folder. In practice that means **you run every command in this plan yourself**, which suits the "teach me" framing anyway. Paste back anything that errors.
+**You write all the code.** Claude drafts and maintains this plan, explains the concepts, reviews what you write and answers questions as you go — but does not write the implementation. Ask when you want guidance on a specific piece.
+
+Separately, your machine's Claude workspace is currently unavailable — a Windows update from 8 September is blocking it, so I can't run commands on your computer this session. I can still read and write files in the repo folder. In practice that means **you run every command in this plan yourself**, which suits the "teach me" framing anyway. Paste back anything that errors.
 
 ---
 
@@ -233,9 +236,12 @@ Both schema files are written and attached. **The Postgres one I've actually run
 
 ### 2c. What you do
 
-- [ ] Pick an engine
-- [ ] Commit the corresponding `schema.sql` to the repo root
-- [ ] Rewrite the queries in `route_api.php` and `user_api.php` against the new table and column names (this overlaps heavily with Phase 4 — do them together)
+- [x] ~~Pick an engine~~ — **MySQL**, hosted on Aiven
+- [ ] Review the schema in 2a and say what's missing or wrong before it's committed
+- [ ] Commit `docs/schema.mysql.sql` to the repo root as `schema.sql`
+- [ ] Write the new repositories against it (Phase 4) rather than porting the old queries — the old API files are being deleted
+
+> **Note:** the MySQL schema is written but was never executed — I had no MySQL server available when drafting it. The Postgres one I did run. So the first `docker compose up` in Phase 3 doubles as the test: if `schema.sql` has a syntax error, the `db` container will fail to initialise and say so in its logs.
 
 ---
 
@@ -302,9 +308,39 @@ I have not been able to build this Dockerfile — no Docker daemon in my sandbox
 
 ---
 
-## Phase 4 — Fix the latent bugs
+## Phase 4 — Delete the API layer, fix what remains
 
-These are all reproducible on `localhost` with no database and no host. Roughly in severity order.
+**Decision taken:** `public/api/route_api.php` and `public/api/user_api.php` are deleted and rewritten, not repaired. That is the right call — between the OAuth switch (which kills every `internal_username` reference), the schema redesign (which changes every table and column name), and dropping the self-cURL convention, essentially every line was already condemned. There is also no working behaviour to lose: the API is broken today.
+
+Before deleting, write down the four operations they were meant to provide — that list is the spec for the rewrite:
+
+1. Create a route with its ordered coordinate points
+2. List all routes with their points (this is what the front page needs)
+3. Fetch a single route with its points
+4. Upsert a user on login
+
+The old files stay recoverable from git history, as long as you rewrite the existing repo rather than starting a fresh one.
+
+### Shape for the rewrite
+
+Keep HTTP handling and data access separate:
+
+```
+public/api/routes.php        parse input, call the repository, return JSON
+public/api/users.php         same
+src/RouteRepository.php      the SQL — no echo, no header, no $_SESSION
+src/UserRepository.php       same
+```
+
+The repositories take a `PDO` and return plain arrays. That's what makes Phase 7's tests possible — you can test a repository without an HTTP request, which you cannot do with the current design. Endpoints return JSON with a status code; they don't redirect.
+
+### The bugs in those two files — superseded
+
+The detailed list that was here (unbound `:route_id`, the clobbered `$stmt` inside its own loop, `$result -> $stmt->execute()`, the fall-through `switch`, `echo` before `header()`, the `substr($url, 0, strlen($url) - 13)` path hacking) no longer needs fixing, since the files are going. It's still worth reading once before you delete them — each one is a mistake that's easy to repeat, and the rewrite should avoid all six.
+
+---
+
+The rest of this phase still applies. These are reproducible on `localhost` with no database and no host, roughly in severity order.
 
 ### Critical — authentication bypass
 
@@ -323,19 +359,6 @@ Anyone can visit `front_page.php?username=whoever` and become that user. No toke
 The fix is to stop making HTTP calls to yourself. Extract the logic into plain functions in `src/` and `require` them. Same code, one process, one session, and roughly 30 lines of cURL boilerplate deleted.
 
 This is the highest-value refactor in the whole project. Everything downstream gets simpler.
-
-### `public/api/user_api.php`
-
-- **Line 44:** `$result -> $stmt->execute();` — object operator where you meant assignment. It tries to read a property named after the result of `execute()`. The insert never reliably runs.
-- **Line 18–35:** `case 'GET':` has no `break`, so every GET falls through into the POST branch and attempts a duplicate user insert on every page load.
-- No `exit`/`break` at the end of `POST` either.
-
-### `public/api/route_api.php`
-
-- **Lines 21–22:** the query binds `:route_id` but nothing calls `bindParam` for it — PDO throws. Separately `$route_info` is assigned the *boolean* from `execute()`, not a row, and then stored in the session as if it were data.
-- **Lines 24–27 and 46–49:** `$stmt` is reassigned inside a `while` loop that is iterating over `$stmt`. The loop variable is clobbered mid-iteration.
-- **Throughout:** `echo 'accessed page <br>'` runs before `header("Location: ...")`. Once any byte of output is sent, PHP cannot send headers — the redirect silently fails. There are also debug `echo`s inside an endpoint declaring `Content-Type: application/json`.
-- **Line 31 and 100:** the redirect URL is built with `substr($url, 0, strlen($url) - 13)` — chopping a fixed 13 characters off the end of a URL. This breaks the moment a filename length changes. Build paths, don't trim them.
 
 ### `public/view_route.php`
 
@@ -385,12 +408,27 @@ Delete `src/Authenticator.php` and `index.php`'s CAS constants entirely — none
 
 The `state` parameter is not optional — it's what prevents CSRF on the callback. Compare it on return and reject a mismatch.
 
-### GitHub vs Google
+### Decision: both providers, behind one interface
 
-- **GitHub** — simpler, and every visitor to a project like this has an account. `client_id` and `client_secret` from Settings → Developer settings → OAuth Apps. Free.
-- **Google** — wider reach for non-developer users, but the consent screen needs configuring and unverified apps show a warning until you complete verification.
+An `AuthProvider` interface with `GithubProvider` and `GoogleProvider` implementations. More design up front, but it's the right instinct — the `users` table already stores `(provider, provider_uid)` rather than assuming one source, so the schema supports it with no change.
 
-For a portfolio project shown to engineers, GitHub is the lower-friction choice.
+```
+src/Auth/AuthProvider.php     interface: getAuthUrl($state), exchangeCode($code): ProviderUser
+src/Auth/GithubProvider.php
+src/Auth/GoogleProvider.php
+src/Auth/ProviderUser.php     value object: provider, uid, email, displayName, avatarUrl
+src/Auth/SessionManager.php   state generation/checking, login, logout
+```
+
+Two things to get right:
+
+**Normalise at the boundary.** GitHub and Google return quite different JSON. Each provider converts its response into the same `ProviderUser` before anything else sees it, so the rest of the app never branches on which provider was used.
+
+**Never key a user on email.** Emails change and can be reused; a Google account and a GitHub account with the same address are still two different identities. `(provider, provider_uid)` is the unique key — which is what the schema's `users_provider_uq` constraint enforces. Store email as a display attribute only.
+
+Suggested order: build the interface and get GitHub working end to end first, then add Google as the second implementation. If the abstraction is right, the second one should be almost entirely mechanical — and if it isn't, you'll find out with only one provider's worth of code to change.
+
+Set-up locations: GitHub is Settings → Developer settings → OAuth Apps. Google is the Cloud Console → APIs & Services → Credentials, and needs a consent screen configured; unverified apps show a warning to users until verification is complete.
 
 ### New env vars
 
@@ -615,7 +653,7 @@ Yours is still the GitLab template, headed "Getting started — To make it easy 
 
 ## What I need from you
 
-1. **MySQL or Postgres** (Phase 2b has the evidence)
-2. **GitHub or Google** for OAuth
-3. **Force-push the existing repo, or start a fresh one**
-4. Anything in Phase 4 you disagree with — I inferred intent from the code in places, and you wrote it
+1. ~~MySQL or Postgres~~ — **decided: MySQL on Aiven**
+2. **Does the Phase 2a schema need changes** before it's committed?
+3. ~~GitHub or Google for OAuth~~ — **decided: both, behind one interface**
+4. **Force-push the existing repo, or start a fresh one**
