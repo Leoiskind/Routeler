@@ -9,7 +9,7 @@ class RouteRepository{
         $this->pdo->beginTransaction();
 
         try{
-            $insertRoute = $this->pdo->prepare(       // ← ADD: the route insert
+            $insertRoute = $this->pdo->prepare(
                 'INSERT INTO routes (user_id, name, description, distance_m)
                 VALUES (:user_id, :name, :description, :distance_m)'
             );
@@ -47,36 +47,93 @@ class RouteRepository{
         }
     }
 
+    /** The columns every route query returns. Kept in one place so the
+     *  shape groupRows() expects can't drift between queries. */
+    private const SELECT_COLUMNS = '
+        r.id, r.name, r.description, r.distance_m, r.created_at,
+        u.username AS author,
+        p.longitude, p.latitude';
+
+    /**
+     * Every public route, newest first.
+     *
+     * @return array<int, array<string, mixed>>
+     */
     public function listAll(): array{
-        $grouped = [];
-        $sql = "SELECT r.id, r.name, r.description, r.distance_m, r.created_at, u.username AS author,
-                p.longitude, p.latitude
+        $sql = 'SELECT ' . self::SELECT_COLUMNS . '
                 FROM routes r
                 JOIN users u ON u.id = r.user_id
                 LEFT JOIN route_points p ON p.route_id = r.id
                 WHERE r.is_public = 1
-                ORDER BY r.created_at DESC, r.id, p.position";
+                ORDER BY r.created_at DESC, r.id, p.position';
 
-        $stmt = $this->pdo->query($sql);
+        return array_values($this->groupRows($this->pdo->query($sql)));
+    }
 
-        $id=-1;
-        foreach ($stmt as $row){
-            if ($row['id'] != $id){
-                $grouped[$row['id']] = [
-                    'id'          => (int) $row['id'],
+    /**
+     * One route by id, or null if there is no such route.
+     *
+     * Note this does NOT filter on is_public — a route page needs to be
+     * reachable by its owner even when private. Once Phase 5 adds auth,
+     * route.php should check ownership before rendering a private route.
+     */
+    public function find(int $id): ?array{
+        $sql = 'SELECT ' . self::SELECT_COLUMNS . '
+                FROM routes r
+                JOIN users u ON u.id = r.user_id
+                LEFT JOIN route_points p ON p.route_id = r.id
+                WHERE r.id = :id
+                ORDER BY p.position';
+
+        // A value from the URL, so: placeholder, never interpolation.
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute(['id' => $id]);
+
+        $grouped = $this->groupRows($stmt);
+
+        // At most one route, but the key is its id rather than 0.
+        return array_values($grouped)[0] ?? null;
+    }
+
+    /**
+     * Collapse the flat join result into one entry per route.
+     *
+     * A join repeats the route columns once per point, so this walks the
+     * rows and builds the nested shape the views expect. Shared by every
+     * query above — the SQL differs, the shape does not.
+     *
+     * Returned keyed by route id; callers use array_values() to get a list.
+     *
+     * @param iterable<array<string, mixed>> $rows
+     * @return array<int, array<string, mixed>>
+     */
+    private function groupRows(iterable $rows): array{
+        $grouped = [];
+
+        foreach ($rows as $row){
+            $id = (int) $row['id'];
+
+            if (!isset($grouped[$id])){
+                $grouped[$id] = [
+                    'id'          => $id,
                     'name'        => $row['name'],
                     'description' => $row['description'],
                     'distance_m'  => $row['distance_m'] !== null ? (int) $row['distance_m'] : null,
                     'author'      => $row['author'],
+                    'created_at'  => $row['created_at'],
                     'points'      => [],
                 ];
-                $id = $row['id'];
             }
+
+            // LEFT JOIN: a route with no points yields one row of nulls.
             if ($row['longitude'] !== null){
-                $grouped[$row['id']]['points'][] = array($row['longitude'], $row['latitude']);
+                $grouped[$id]['points'][] = [
+                    (float) $row['longitude'],
+                    (float) $row['latitude'],
+                ];
             }
         }
 
-        return array_values($grouped);
+        return $grouped;
     }
 }
