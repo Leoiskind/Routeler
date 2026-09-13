@@ -172,3 +172,11 @@ a { color: var(--accent); }
     font-size: 15px;
     border-radius: 0 var(--radius) var(--radius) 0;
 }
+
+/* route detail */
+.breadcrumb { margin: 0 0 8px; font-size: 14px; }
+.breadcrumb a { text-decoration: none; color: var(--ink-soft); }
+.breadcrumb a:hover { color: var(--accent); }
+.route-meta { margin: 0 0 12px; color: var(--ink-soft); font-size: 15px; }
+.route-description { margin: 0 0 20px; max-width: 60ch; }
+.map--tall { height: 520px; }
