@@ -317,13 +317,17 @@ I have not been able to build this Dockerfile — no Docker daemon in my sandbox
 
 ---
 
-## Phase 4 — Delete the API layer, fix what remains  🟡 IN PROGRESS
+## Phase 4 — Delete the API layer, fix what remains  ✅ DONE (13 Sep)
 
 **Working as of 13 Sep:** `src/bootstrap.php` (PDO + session + `e`/`view`/`render`/`redirect`/`json_response` helpers), `src/views/` (layout, nav, route-card, route-list, route-create), `src/RouteRepository.php` (`listAll`, `create` with a transaction), `public/index.php` (listing), `public/create.php` + `public/api/routes.php` (draw → Map Matching → save), `public/assets/css/app.css`. Temporary `public/dev-login.php`, guarded by `APP_ENV=dev` — **delete in Phase 5**.
 
 **Design change:** the *matched* geometry from Mapbox is now stored, not the raw clicks. Routes render along streets with no API call at view time. The old design stored waypoints and re-queried Directions on every view.
 
-**Still to do:** `route.php` + `RouteRepository::find()`; `profile.php` + `UserRepository`; delete `src/Authenticator.php`, root `index.php`, `public/api/route_api.php`, `public/api/user_api.php`, `public/info.php`, `public/front_page.php`, `public/view_route.php`, `public/view-profile.php`; move `assets/` into `public/assets/`.
+**Completed:** `route.php` + `RouteRepository::find()` and `listByAuthor()`; `profile.php` + `UserRepository` (`findByUsername`, `findByProvider`, `updateProfile`); `settings.php` with CSRF protection and POST-Redirect-GET; all superseded pages deleted; `assets/` moved into the document root; `app.css` rewritten in the original dark navy / crimson palette.
+
+Repository layer verified with 15 checks against a throwaway database — create/listAll/find/listByAuthor and all three user lookups, including that `google`/`1001` correctly does not match `github`/`1001`.
+
+**Deliberately not built:** the Followers / Following / Rating tiles the old mockup showed. The `follows` and `ratings` tables exist but nothing writes to them; empty tiles would be decoration.
 
 
 **Decision taken:** `public/api/route_api.php` and `public/api/user_api.php` are deleted and rewritten, not repaired. That is the right call — between the OAuth switch (which kills every `internal_username` reference), the schema redesign (which changes every table and column name), and dropping the self-cURL convention, essentially every line was already condemned. There is also no working behaviour to lose: the API is broken today.
