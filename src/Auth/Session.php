@@ -1,6 +1,8 @@
 <?php
 declare(strict_types=1);
 
+namespace App\Auth;
+
 /**
  * Everything the sign-in flow keeps in the session.
  */

@@ -1,6 +1,11 @@
 <?php
 declare(strict_types=1);
 
+namespace App\Auth;
+
+use JsonException;
+use RuntimeException;
+
 /**
  * The two HTTP calls the OAuth flow needs. Kept apart from the providers
  * so they read as OAuth rather than as cURL.

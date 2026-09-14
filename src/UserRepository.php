@@ -1,7 +1,12 @@
 <?php
 declare(strict_types=1);
 
-require_once __DIR__ . '/Auth/ProviderUser.php';
+namespace App;
+
+use App\Auth\ProviderUser;
+use PDO;
+use PDOException;
+use RuntimeException;
 
 class UserRepository{
     /** Longest a generated handle may be before its collision suffix. */

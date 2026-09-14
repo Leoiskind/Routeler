@@ -1,8 +1,9 @@
 <?php
 declare(strict_types=1);
 require __DIR__ . '/../src/bootstrap.php';
-require __DIR__ . '/../src/UserRepository.php';
-require __DIR__ . '/../src/RouteRepository.php';
+
+use App\RouteRepository;
+use App\UserRepository;
 
 $users  = new UserRepository(pdo());
 $routes = new RouteRepository(pdo());

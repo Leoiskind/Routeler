@@ -1,7 +1,8 @@
 <?php
 declare(strict_types=1);
 require __DIR__ . '/../src/bootstrap.php';
-require __DIR__ . '/../src/RouteRepository.php';
+
+use App\RouteRepository;
 
 $repo = new RouteRepository(pdo());
 $routes = $repo->listAll();

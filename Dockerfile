@@ -8,19 +8,27 @@ RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' \
 
 RUN a2enmod rewrite
 
+# Composer, copied out of its official image rather than installed by hand.
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+ENV COMPOSER_ALLOW_SUPERUSER=1
+
 COPY . /var/www/html
 WORKDIR /var/www/html
+
+# vendor/ is in .dockerignore, so the image builds its own.
+#   --no-dev              PHPStan and PHPUnit are not needed to serve a page
+#   --optimize-autoloader build a class map now rather than searching the
+#                         filesystem on every class load
+RUN composer install --no-dev --no-interaction --no-progress --optimize-autoloader
 
 # Windows does not carry the executable bit through git, so set it here
 # rather than relying on how the file arrived.
 RUN chmod +x /var/www/html/docker-entrypoint.sh
 
-# Documentation only — it does not publish anything, and the real port is
-# decided at run time by the entrypoint.
+# Documentation only — the real port is decided at run time by the entrypoint.
 EXPOSE 80
 
 # ENTRYPOINT runs first and receives CMD as its arguments, so the script
-# rewrites the port and then exec's apache2-foreground. Splitting them
-# this way keeps `docker run <image> bash` working for debugging.
+# rewrites the port and then exec's apache2-foreground.
 ENTRYPOINT ["/var/www/html/docker-entrypoint.sh"]
 CMD ["apache2-foreground"]

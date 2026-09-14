@@ -1,6 +1,8 @@
 <?php
 declare(strict_types=1);
 
+namespace App\Auth;
+
 /**
  * What every provider boils down to.
  *

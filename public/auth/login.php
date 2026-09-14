@@ -1,14 +1,16 @@
 <?php
 declare(strict_types=1);
 require __DIR__ . '/../../src/bootstrap.php';
-require __DIR__ . '/../../src/Auth/providers.php';
+
+use App\Auth\Providers;
+use App\Auth\Session;
 
 // Already signed in? Nothing to do here.
 if (current_user_id() !== null) {
     redirect('/');
 }
 
-$configured = auth_providers_configured();
+$configured = Providers::configured();
 $requested  = (string) ($_GET['with'] ?? '');
 
 // No provider named: show the buttons.

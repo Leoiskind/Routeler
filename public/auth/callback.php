@@ -1,8 +1,10 @@
 <?php
 declare(strict_types=1);
 require __DIR__ . '/../../src/bootstrap.php';
-require __DIR__ . '/../../src/Auth/providers.php';
-require __DIR__ . '/../../src/UserRepository.php';
+
+use App\Auth\Providers;
+use App\Auth\Session;
+use App\UserRepository;
 
 function fail(string $message): never
 {
@@ -26,7 +28,7 @@ if ($verifier === null || $name === null){
     fail('Your sign-in session expired. Please try again.');
 }
 
-$provider = auth_provider($name);
+$provider = Providers::get($name);
 
 if ($provider === null){
     fail('Your sign-in session expired. Please try again.');
