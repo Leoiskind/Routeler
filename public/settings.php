@@ -8,11 +8,11 @@ if ($userId === null) {
     redirect('/auth/login.php');
 }
 
-$users = new UserRepository($pdo);
+$users = new UserRepository(pdo());
 
 // Look the user up by id. findByUsername needs a username we don't have
 // yet, so one small query here.
-$stmt = $pdo->prepare('SELECT username FROM users WHERE id = :id');
+$stmt = pdo()->prepare('SELECT username FROM users WHERE id = :id');
 $stmt->execute(['id' => $userId]);
 $username = $stmt->fetchColumn();
 

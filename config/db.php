@@ -36,7 +36,9 @@ if ($sslCa !== '') {
 }
 
 try {
-    $conn = new PDO($dsn, $user, $pass, $options);
+    // Returned to pdo() in bootstrap.php rather than assigned to a
+    // variable this file leaves behind for its caller to find.
+    return new PDO($dsn, $user, $pass, $options);
 } catch (PDOException $e) {
     /*
      * Free tiers sleep. Render spins the app down after ~15 minutes idle

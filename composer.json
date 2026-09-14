@@ -1,0 +1,20 @@
+{
+    "name": "leo/routeler",
+    "description": "Share and discover walking and running routes around Manchester.",
+    "type": "project",
+    "license": "MIT",
+    "require": {
+        "php": "^8.3"
+    },
+    "require-dev": {
+        "phpstan/phpstan": "^2.2",
+        "phpunit/phpunit": "^13.3"
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "scripts": {
+        "stan": "phpstan analyse",
+        "test": "phpunit"
+    }
+}
