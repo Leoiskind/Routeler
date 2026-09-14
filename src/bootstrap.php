@@ -9,6 +9,10 @@ declare(strict_types=1);
  * After that you have a session, pdo(), and the helpers below.
  */
 
+// Composer's autoloader. Pages require this one file and get every
+// class under App\ without a require of their own.
+require_once __DIR__ . '/../vendor/autoload.php';
+
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }

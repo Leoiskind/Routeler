@@ -1,7 +1,8 @@
 <?php
 declare(strict_types=1);
 require __DIR__ . '/../src/bootstrap.php';
-require __DIR__ . '/../src/UserRepository.php';
+
+use App\UserRepository;
 
 $userId = current_user_id();
 if ($userId === null) {

@@ -20,7 +20,8 @@ declare(strict_types=1);
  */
 
 require __DIR__ . '/../../src/bootstrap.php';
-require __DIR__ . '/../../src/RouteRepository.php';
+
+use App\RouteRepository;
 
 if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') {
     json_response(['error' => 'Method not allowed'], 405);

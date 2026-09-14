@@ -1,7 +1,8 @@
 <?php
 declare(strict_types=1);
 require __DIR__ . '/../src/bootstrap.php';
-require __DIR__ . '/../src/RouteRepository.php';
+
+use App\RouteRepository;
 
 $id = filter_input(INPUT_GET, 'id', FILTER_VALIDATE_INT);
 

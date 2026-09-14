@@ -1,6 +1,11 @@
 <?php
 declare(strict_types=1);
 
+namespace App;
+
+use PDO;
+use Throwable;
+
 class RouteRepository{
     public function __construct(private PDO $pdo){}
 

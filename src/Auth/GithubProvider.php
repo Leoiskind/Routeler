@@ -1,6 +1,10 @@
 <?php
 declare(strict_types=1);
 
+namespace App\Auth;
+
+use RuntimeException;
+
 final class GithubProvider implements AuthProvider
 {
     private const AUTHORIZE = 'https://github.com/login/oauth/authorize';

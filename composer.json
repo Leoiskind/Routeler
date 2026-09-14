@@ -10,6 +10,19 @@
         "phpstan/phpstan": "^2.2",
         "phpunit/phpunit": "^13.3"
     },
+    "autoload": {
+        "psr-4": {
+            "App\\": "src/"
+        },
+        "exclude-from-classmap": [
+            "src/views/"
+        ]
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "App\\Tests\\": "tests/"
+        }
+    },
     "config": {
         "sort-packages": true
     },
