@@ -8,7 +8,7 @@
     },
     "require-dev": {
         "phpstan/phpstan": "^2.2",
-        "phpunit/phpunit": "^13.3"
+        "phpunit/phpunit": "*"
     },
     "autoload": {
         "psr-4": {
@@ -24,7 +24,10 @@
         }
     },
     "config": {
-        "sort-packages": true
+        "sort-packages": true,
+        "platform": {
+            "php": "8.3.33"
+        }
     },
     "scripts": {
         "stan": "phpstan analyse",
