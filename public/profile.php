@@ -4,8 +4,8 @@ require __DIR__ . '/../src/bootstrap.php';
 require __DIR__ . '/../src/UserRepository.php';
 require __DIR__ . '/../src/RouteRepository.php';
 
-$users  = new UserRepository($pdo);
-$routes = new RouteRepository($pdo);
+$users  = new UserRepository(pdo());
+$routes = new RouteRepository(pdo());
 
 $username = trim((string) ($_GET['u'] ?? ''));
 
@@ -16,7 +16,7 @@ if ($username === '') {
         redirect('/auth/login.php');
     }
 
-    $stmt = $pdo->prepare('SELECT username FROM users WHERE id = :id');
+    $stmt = pdo()->prepare('SELECT username FROM users WHERE id = :id');
     $stmt->execute(['id' => $userId]);
     $username = (string) $stmt->fetchColumn();
 }

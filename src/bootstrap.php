@@ -6,17 +6,38 @@ declare(strict_types=1);
  *
  *     require_once __DIR__ . '/../src/bootstrap.php';
  *
- * After that you have $pdo, a session, and the helpers below.
+ * After that you have a session, pdo(), and the helpers below.
  */
 
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-// config/db.php creates $conn. Aliased to $pdo so the rest of the app
-// uses one name for it.
-require_once __DIR__ . '/../config/db.php';
-$pdo = $conn;
+/**
+ * The database connection.
+ *
+ * A function rather than a $pdo variable left lying around by this file.
+ * A variable created here and used in public/index.php is invisible
+ * coupling: nothing in that page says where it came from, and static
+ * analysis cannot follow a require to find out. A declared function with
+ * a declared return type is checkable.
+ *
+ * static: the connection is created on first call and reused for the rest
+ * of the request, so calling pdo() five times opens one connection, not
+ * five. It is also lazy — a page that never calls it never connects,
+ * which matters when the database is a free tier that sleeps.
+ */
+function pdo(): PDO
+{
+    static $pdo = null;
+
+    if ($pdo === null) {
+        // db.php returns the PDO instance.
+        $pdo = require __DIR__ . '/../config/db.php';
+    }
+
+    return $pdo;
+}
 
 /**
  * Escape a value for output inside HTML.

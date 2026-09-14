@@ -11,7 +11,7 @@ if ($id === false || $id === null || $id < 1) {
     exit;
 }
 
-$route = (new RouteRepository($pdo))->find($id);
+$route = (new RouteRepository(pdo()))->find($id);
 
 if ($route === null) {
     http_response_code(404);

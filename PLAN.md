@@ -414,7 +414,7 @@ This is the highest-value refactor in the whole project. Everything downstream g
 
 ---
 
-## Phase 5 — Replace CAS with OAuth
+## Phase 5 — Replace CAS with OAuth  ✅ DONE (14 Sep)
 
 Delete `src/Authenticator.php` and `index.php`'s CAS constants entirely — none of it works off-campus and none of it is worth porting.
 
@@ -478,7 +478,39 @@ Use `league/oauth2-client` via Composer rather than hand-rolling the HTTP calls 
 
 ---
 
-## Phase 6 — Free hosting
+## Phase 6 — Free hosting  ✅ DONE (14 Sep)
+
+**Live at https://routeler.onrender.com** — Render (Frankfurt, free) + Aiven MySQL 8.4
+(Amsterdam, free), connected over TLS with certificate verification.
+
+What was actually needed, for the record:
+
+- `docker-entrypoint.sh` rewrites Apache's port from `$PORT` and `exec`s
+  `apache2-foreground`. Confirmed on Render: `[entrypoint] Apache will listen on 10000`
+  and Apache at `pid 1`.
+- `config/aiven-ca.pem` committed; `DB_SSL_CA=/var/www/html/config/aiven-ca.pem`.
+  First deployed request returned `200`, so TLS + verification worked first try.
+- Aiven defaults that differ from local: port `25875` (not 3306), database `defaultdb`,
+  user `avnadmin`.
+- **Two GitHub OAuth apps.** An OAuth App has exactly one callback URL, so localhost and
+  production cannot share one. Dev app keeps `http://localhost:8080/...`; a second
+  "Routeler (production)" app holds `https://routeler.onrender.com/auth/callback.php`,
+  and its credentials are the ones in Render.
+- Health Check Path deliberately left blank: `/` returns 503 when the free database is
+  asleep, which Render would read as a failed deploy.
+
+Gotchas hit along the way, worth remembering:
+
+- Piping a file into `mysql` while using `--password` makes the prompt read the SQL file
+  as the password. Use `MYSQL_PWD` instead, and `Get-Content ... |` rather than `<` in
+  PowerShell.
+- `MYSQL_PASSWORD` in compose only applies when the data volume is **empty**. Editing
+  `DB_PASS` afterwards desynchronises `.env` from the actual account.
+- Env vars are read at container **creation**: `--force-recreate`, never `restart`.
+
+**Known limitation:** sessions are files in an ephemeral container, so every deploy signs
+everyone out. Acceptable here; the real fix is shared session storage.
+
 
 ### 6a. The application
 

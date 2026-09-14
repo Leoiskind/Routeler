@@ -108,7 +108,7 @@ foreach ($rawPoints as $i => $pair) {
     $points[] = [$lng, $lat];
 }
 
-$repo = new RouteRepository($pdo);
+$repo = new RouteRepository(pdo());
 
 try {
     $id = $repo->create($userId, $name, $description, $distance, $points);

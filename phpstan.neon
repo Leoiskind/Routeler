@@ -1,0 +1,17 @@
+parameters:
+    # Levels run 0 (barely more than a syntax check) to 10 (very strict).
+    # Started at 1, raised to 5 once the findings were fixed. Raising it
+    # further is a one-line change and a good way back into the project.
+    #
+    level: 5
+
+    paths:
+        - src
+        - public
+
+    excludePaths:
+        # Views receive their variables from extract() in view(), so there
+        # is no way for static analysis to know $route or $user exist.
+        # Every one would be reported as undefined. Revisit if the views
+        # ever take explicit parameters.
+        - src/views

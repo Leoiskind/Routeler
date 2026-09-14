@@ -98,7 +98,9 @@ final class Session
                 'domain'   => $p['domain'],
                 'secure'   => $p['secure'],
                 'httponly' => $p['httponly'],
-                'samesite' => $p['samesite'] ?? 'Lax',
+                // Always present; empty string when unconfigured, which
+                // setcookie() accepts as "omit the attribute".
+                'samesite' => $p['samesite'],
             ]);
         }
 

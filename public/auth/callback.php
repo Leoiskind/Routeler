@@ -45,7 +45,7 @@ try{
     fail('Sign-in failed. Please try again.');
 }
 
-$users = new UserRepository($pdo);
+$users = new UserRepository(pdo());
 
 $row = $users->findByProvider($identity->provider, $identity->uid);
 $userId = $row !== null ? $row['id'] : $users->upsert($identity);
