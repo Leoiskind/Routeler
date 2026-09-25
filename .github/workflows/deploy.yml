@@ -1,0 +1,26 @@
+name: Deploy
+
+# Triggered by CI finishing, not by a push. Render's own auto-deploy is
+# off, so this workflow is the only thing that starts a deploy — and only
+# when the checks passed.
+on:
+  workflow_run:
+    workflows: [CI]
+    branches: [main]
+    types: [completed]
+
+jobs:
+  deploy:
+    # 'completed' includes failed and cancelled runs, so the gate is here
+    # rather than in the trigger. Without this line it would happily
+    # deploy a red build.
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Trigger Render deploy
+        # -f makes curl fail the step on an HTTP error instead of exiting 0
+        # with an error page in the body, which would look like success.
+        run: curl -fsS -X POST "$DEPLOY_HOOK"
+        env:
+          DEPLOY_HOOK: ${{ secrets.RENDER_DEPLOY_HOOK }}
